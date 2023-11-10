@@ -1,0 +1,25 @@
+#!/bin/sh
+set -e
+
+if [ ! -e /mnt ]; then
+    mkdir -p /mnt
+    sleep 3
+fi
+
+for usbpartition in /dev/disk/by-id/usb-*-part1; do
+    usbdevice=$(readlink -f $usbpartition)
+
+    if mount -t ext4 $usbdevice /mnt 2>/dev/null; then
+        KEY_FILE="filename"  # Remplacez par le nom de votre fichier de clé
+        if [ -e /mnt/$KEY_FILE.lek ]; then
+            cat /mnt/$KEY_FILE.lek
+            umount $usbdevice
+            exit
+        fi
+
+        umount $usbdevice
+    fi
+done
+
+/lib/cryptsetup/askpass "Insérez la clé USB ou entrez une passphrase et appuyez sur ENTREÉ : "
+END
